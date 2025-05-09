@@ -226,11 +226,44 @@
 									{#if $config?.onboarding ?? false}
 										{$i18n.t(`Get started with {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
 									{:else if mode === 'ldap'}
-										{$i18n.t(`Sign in to {{WEBUI_NAME}} with LDAP`, { WEBUI_NAME: $WEBUI_NAME })}
+										{$i18n.t(`Sign 3 in to {{WEBUI_NAME}} with LDAP`, { WEBUI_NAME: $WEBUI_NAME })}
+										<div class="flex space-x-2">
+				<div class=" self-center">
+					<img
+						id="logo"
+						crossorigin="anonymous"
+						src="{WEBUI_BASE_URL}/static/login.png"
+						class=" w-6 rounded-full"
+						alt="logo"
+					/>
+				</div>
+			</div>
 									{:else if mode === 'signin'}
-										{$i18n.t(`Sign in to {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+										{$i18n.t(`Sign 1 in to {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+										<div class="flex space-x-2">
+				<div class=" self-center">
+					<img
+						id="logo"
+						crossorigin="anonymous"
+						src="{WEBUI_BASE_URL}/static/login.png"
+						class=" w-6 rounded-full"
+						alt="logo"
+					/>
+				</div>
+			</div>
 									{:else}
-										{$i18n.t(`Sign up to {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+										{$i18n.t(`Sign 2 up to {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+										<div class="flex space-x-2">
+				<div class=" self-center">
+					<img
+						id="logo"
+						crossorigin="anonymous"
+						src="{WEBUI_BASE_URL}/static/login.png"
+						class=" w-6 rounded-full"
+						alt="logo"
+					/>
+				</div>
+			</div>
 									{/if}
 								</div>
 
