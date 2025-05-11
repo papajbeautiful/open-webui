@@ -88,7 +88,7 @@
 
 <svelte:head>
 	<title>
-		{$i18n.t('Prompts')} • Alceon Copilot
+		{$i18n.t('Prompts')} • {$WEBUI_NAME}
 	</title>
 </svelte:head>
 

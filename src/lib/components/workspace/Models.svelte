@@ -196,7 +196,7 @@
 
 <svelte:head>
 	<title>
-		{$i18n.t('Models')} • Alceon Copilot
+		{$i18n.t('Models')} • {$WEBUI_NAME}
 	</title>
 </svelte:head>
 

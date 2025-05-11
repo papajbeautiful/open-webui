@@ -45,7 +45,7 @@
 
 <svelte:head>
 	<title>
-		{$i18n.t('Workspace')} • Alceon Copilot
+		{$i18n.t('Workspace')} • {$WEBUI_NAME}
 	</title>
 </svelte:head>
 

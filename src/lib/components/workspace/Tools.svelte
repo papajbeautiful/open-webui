@@ -164,7 +164,7 @@
 
 <svelte:head>
 	<title>
-		{$i18n.t('Tools')} • Alceon Copilot
+		{$i18n.t('Tools')} • {$WEBUI_NAME}
 	</title>
 </svelte:head>
 

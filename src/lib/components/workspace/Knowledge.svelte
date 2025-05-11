@@ -72,7 +72,7 @@
 
 <svelte:head>
 	<title>
-		{$i18n.t('Knowledge')} • Alceon Copilot
+		{$i18n.t('Knowledge')} • {$WEBUI_NAME}
 	</title>
 </svelte:head>
 
