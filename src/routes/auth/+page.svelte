@@ -162,7 +162,7 @@
 
 <svelte:head>
 	<title>
-		Alceon Copilot
+		{`${$WEBUI_NAME}`}
 	</title>
 </svelte:head>
 
@@ -210,7 +210,7 @@
 							}}
 						>
 							<div class="mb-1">
-								<img crossorigin="anonymous" src="/static/login.png" class="rounded" alt="logo" style="max-width: 250px !important; margin: 0 auto 20px !important;">
+								<img crossorigin="anonymous" src="/static/login.png" class="rounded" alt="logo">
 								<div class=" text-2xl font-medium">
 									{#if $config?.onboarding ?? false}
 										{$i18n.t(`Get started with {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
