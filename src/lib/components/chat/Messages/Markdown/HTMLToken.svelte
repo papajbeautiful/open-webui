@@ -70,8 +70,18 @@
 				referrerpolicy="strict-origin-when-cross-origin"
 				allowfullscreen
 				width="100%"
-				height={fileId.includes('chart') || fileId.includes('visualizer') ? "300px" : null}
-				onload={fileId.includes('chart') || fileId.includes('visualizer') ? null : "this.style.height=(this.contentWindow.document.body.scrollHeight+20)+'px';"}
+				onload="
+					try {
+						const metaType = this.contentWindow.document.querySelector('meta[name=content-type]')?.getAttribute('content');
+						if (metaType === 'chart') {
+							this.style.height = '300px';
+						} else {
+							this.style.height = (this.contentWindow.document.body.scrollHeight+20)+'px';
+						}
+					} catch(e) {
+						this.style.height = (this.contentWindow.document.body.scrollHeight+20)+'px';
+					}
+				"
 			></iframe>
 		{/if}
 	{:else if token.text.includes(`<source_id`)}
