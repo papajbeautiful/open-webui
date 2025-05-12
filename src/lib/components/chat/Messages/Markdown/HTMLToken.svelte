@@ -70,7 +70,8 @@
 				referrerpolicy="strict-origin-when-cross-origin"
 				allowfullscreen
 				width="100%"
-				onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+'px';"
+				height={fileId.includes('chart') || fileId.includes('visualizer') ? "300px" : null}
+				onload={fileId.includes('chart') || fileId.includes('visualizer') ? null : "this.style.height=(this.contentWindow.document.body.scrollHeight+20)+'px';"}
 			></iframe>
 		{/if}
 	{:else if token.text.includes(`<source_id`)}
