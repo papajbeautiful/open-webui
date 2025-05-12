@@ -67,7 +67,7 @@
 
 	let webSearch = null;
 
-	let iframeSandboxAllowSameOrigin = false;
+	let iframeSandboxAllowSameOrigin = true;
 	let iframeSandboxAllowForms = false;
 
 	const toggleExpandDetails = () => {
