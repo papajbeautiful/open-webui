@@ -70,22 +70,7 @@
 				referrerpolicy="strict-origin-when-cross-origin"
 				allowfullscreen
 				width="100%"
-<<<<<<< HEAD
-				onload="
-					try {
-						const metaType = this.contentWindow.document.querySelector('meta[name=content-type]')?.getAttribute('content');
-						if (metaType === 'chart') {
-							this.style.height = '300px';
-						} else {
-							this.style.height = (this.contentWindow.document.body.scrollHeight+20)+'px';
-						}
-					} catch(e) {
-						this.style.height = (this.contentWindow.document.body.scrollHeight+20)+'px';
-					}
-				"
-=======
 				onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+'px';"
->>>>>>> parent of 4c2f255a2 (iframe fix)
 			></iframe>
 		{/if}
 	{:else if token.text.includes(`<source_id`)}
