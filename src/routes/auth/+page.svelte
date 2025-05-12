@@ -12,7 +12,6 @@
 	import { WEBUI_NAME, config, user, socket } from '$lib/stores';
 
 	import { generateInitialsImage, canvasPixelTest } from '$lib/utils';
-	import { setupSocket } from '$lib/utils/websocket';
 
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import OnBoarding from '$lib/components/OnBoarding.svelte';
@@ -42,10 +41,6 @@
 			if (sessionUser.token) {
 				localStorage.token = sessionUser.token;
 			}
-			if (!$socket) {
-				await setupSocket($config.features?.enable_websocket ?? true);
-			}
-
 			$socket.emit('user-join', { auth: { token: sessionUser.token } });
 			await user.set(sessionUser);
 			await config.set(await getBackendConfig());
@@ -180,6 +175,23 @@
 	<div class="w-full absolute top-0 left-0 right-0 h-8 drag-region" />
 
 	{#if loaded}
+<<<<<<< HEAD
+
+=======
+		<div class="fixed m-10 z-50">
+			<div class="flex space-x-2">
+				<div class=" self-center">
+					<img
+						id="logo"
+						crossorigin="anonymous"
+						src="{WEBUI_BASE_URL}/static/splash.png"
+						class=" w-6 rounded-full"
+						alt=""
+					/>
+				</div>
+			</div>
+		</div>
+>>>>>>> upstream/main
 
 		<div
 			class="fixed bg-transparent min-h-screen w-full flex justify-center font-primary z-50 text-black dark:text-white"
@@ -224,7 +236,6 @@
 								</div>
 
 								{#if $config?.onboarding ?? false}
-									<div class=" mt-1 text-xs font-medium text-gray-500">
 									<div class="mt-1 text-xs font-medium text-gray-600 dark:text-gray-500">
 										ⓘ {$WEBUI_NAME}
 										{$i18n.t(
@@ -238,7 +249,6 @@
 								<div class="flex flex-col mt-4">
 									{#if mode === 'signup'}
 										<div class="mb-2">
-											<div class=" text-sm font-medium text-left mb-1">{$i18n.t('Name')}</div>
 											<label for="name" class="text-sm font-medium text-left mb-1 block"
 												>{$i18n.t('Name')}</label
 											>
@@ -256,7 +266,6 @@
 
 									{#if mode === 'ldap'}
 										<div class="mb-2">
-											<div class=" text-sm font-medium text-left mb-1">{$i18n.t('Username')}</div>
 											<label for="username" class="text-sm font-medium text-left mb-1 block"
 												>{$i18n.t('Username')}</label
 											>
@@ -273,7 +282,6 @@
 										</div>
 									{:else}
 										<div class="mb-2">
-											<div class=" text-sm font-medium text-left mb-1">{$i18n.t('Email')}</div>
 											<label for="email" class="text-sm font-medium text-left mb-1 block"
 												>{$i18n.t('Email')}</label
 											>
@@ -291,8 +299,6 @@
 									{/if}
 
 									<div>
-										<div class=" text-sm font-medium text-left mb-1">{$i18n.t('Password')}</div>
-
 										<label for="password" class="text-sm font-medium text-left mb-1 block"
 											>{$i18n.t('Password')}</label
 										>
