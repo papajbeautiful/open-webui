@@ -181,7 +181,6 @@
 
 	{#if loaded}
 
-
 		<div
 			class="fixed bg-transparent min-h-screen w-full flex justify-center font-primary z-50 text-black dark:text-white"
 		>
@@ -226,6 +225,7 @@
 
 								{#if $config?.onboarding ?? false}
 									<div class=" mt-1 text-xs font-medium text-gray-500">
+									<div class="mt-1 text-xs font-medium text-gray-600 dark:text-gray-500">
 										ⓘ {$WEBUI_NAME}
 										{$i18n.t(
 											'does not make any external connections, and your data stays securely on your locally hosted server.'
@@ -239,9 +239,13 @@
 									{#if mode === 'signup'}
 										<div class="mb-2">
 											<div class=" text-sm font-medium text-left mb-1">{$i18n.t('Name')}</div>
+											<label for="name" class="text-sm font-medium text-left mb-1 block"
+												>{$i18n.t('Name')}</label
+											>
 											<input
 												bind:value={name}
 												type="text"
+												id="name"
 												class="my-0.5 w-full text-sm outline-hidden bg-transparent"
 												autocomplete="name"
 												placeholder={$i18n.t('Enter Your Full Name')}
@@ -253,12 +257,16 @@
 									{#if mode === 'ldap'}
 										<div class="mb-2">
 											<div class=" text-sm font-medium text-left mb-1">{$i18n.t('Username')}</div>
+											<label for="username" class="text-sm font-medium text-left mb-1 block"
+												>{$i18n.t('Username')}</label
+											>
 											<input
 												bind:value={ldapUsername}
 												type="text"
 												class="my-0.5 w-full text-sm outline-hidden bg-transparent"
 												autocomplete="username"
 												name="username"
+												id="username"
 												placeholder={$i18n.t('Enter Your Username')}
 												required
 											/>
@@ -266,9 +274,13 @@
 									{:else}
 										<div class="mb-2">
 											<div class=" text-sm font-medium text-left mb-1">{$i18n.t('Email')}</div>
+											<label for="email" class="text-sm font-medium text-left mb-1 block"
+												>{$i18n.t('Email')}</label
+											>
 											<input
 												bind:value={email}
 												type="email"
+												id="email"
 												class="my-0.5 w-full text-sm outline-hidden bg-transparent"
 												autocomplete="email"
 												name="email"
@@ -281,6 +293,9 @@
 									<div>
 										<div class=" text-sm font-medium text-left mb-1">{$i18n.t('Password')}</div>
 
+										<label for="password" class="text-sm font-medium text-left mb-1 block"
+											>{$i18n.t('Password')}</label
+										>
 										<input
 											bind:value={password}
 											type="password"
