@@ -64,9 +64,7 @@
 				src={`${WEBUI_BASE_URL}/api/v1/files/${fileId}/content/html`}
 				title="Content"
 				frameborder="0"
-				sandbox="allow-scripts allow-same-origin{($settings?.iframeSandboxAllowForms ?? false)
-					? ' allow-forms'
-					: ''}"
+				sandbox="allow-scripts allow-same-origin"
 				referrerpolicy="strict-origin-when-cross-origin"
 				allowfullscreen
 				width="100%"
