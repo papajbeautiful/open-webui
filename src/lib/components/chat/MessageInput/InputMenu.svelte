@@ -20,14 +20,17 @@
 
 	const i18n = getContext('i18n');
 
+	export let selectedToolIds: string[] = [];
+
+	export let selectedModels: string[] = [];
+	export let fileUploadCapableModels: string[] = [];
+
 	export let screenCaptureHandler: Function;
 	export let uploadFilesHandler: Function;
 	export let inputFilesHandler: Function;
 
 	export let uploadGoogleDriveHandler: Function;
 	export let uploadOneDriveHandler: Function;
-
-	export let selectedToolIds: string[] = [];
 
 	export let onClose: Function;
 
@@ -40,7 +43,9 @@
 	}
 
 	let fileUploadEnabled = true;
-	$: fileUploadEnabled = $user?.role === 'admin' || $user?.permissions?.chat?.file_upload;
+	$: fileUploadEnabled =
+		fileUploadCapableModels.length === selectedModels.length &&
+		($user?.role === 'admin' || $user?.permissions?.chat?.file_upload);
 
 	const init = async () => {
 		if ($_tools === null) {
@@ -169,7 +174,11 @@
 			{/if}
 
 			<Tooltip
-				content={!fileUploadEnabled ? $i18n.t('You do not have permission to upload files.') : ''}
+				content={fileUploadCapableModels.length !== selectedModels.length
+					? $i18n.t('Model(s) do not support file upload')
+					: !fileUploadEnabled
+						? $i18n.t('You do not have permission to upload files.')
+						: ''}
 				className="w-full"
 			>
 				<DropdownMenu.Item
@@ -196,7 +205,11 @@
 			</Tooltip>
 
 			<Tooltip
-				content={!fileUploadEnabled ? $i18n.t('You do not have permission to upload files.') : ''}
+				content={fileUploadCapableModels.length !== selectedModels.length
+					? $i18n.t('Model(s) do not support file upload')
+					: !fileUploadEnabled
+						? $i18n.t('You do not have permission to upload files.')
+						: ''}
 				className="w-full"
 			>
 				<DropdownMenu.Item
@@ -213,7 +226,6 @@
 					<div class="line-clamp-1">{$i18n.t('Upload Files')}</div>
 				</DropdownMenu.Item>
 			</Tooltip>
-
 			{#if $config?.features?.enable_google_drive_integration}
 				<DropdownMenu.Item
 					class="flex gap-2 items-center px-3 py-2 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
