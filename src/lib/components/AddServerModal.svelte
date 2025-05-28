@@ -22,6 +22,7 @@
 	export let edit = false;
 
 	export let direct = false;
+
 	export let connection = null;
 
 	let url = '';
@@ -31,9 +32,6 @@
 	let key = '';
 
 	let accessControl = {};
-
-	let name = '';
-	let description = '';
 
 	let enable = true;
 
@@ -53,7 +51,7 @@
 		if (direct) {
 			const res = await getToolServerData(
 				auth_type === 'bearer' ? key : localStorage.token,
-				path.includes('://') ? path : `${url}${path.startsWith('/') ? '' : '/'}${path}`
+				`${url}/${path}`
 			).catch((err) => {
 				toast.error($i18n.t('Connection failed'));
 			});
@@ -71,10 +69,6 @@
 				config: {
 					enable: enable,
 					access_control: accessControl
-				},
-				info: {
-					name,
-					description
 				}
 			}).catch((err) => {
 				toast.error($i18n.t('Connection failed'));
@@ -101,10 +95,6 @@
 			config: {
 				enable: enable,
 				access_control: accessControl
-			},
-			info: {
-				name: name,
-				description: description
 			}
 		};
 
@@ -118,9 +108,6 @@
 		key = '';
 		auth_type = 'bearer';
 
-		name = '';
-		description = '';
-
 		enable = true;
 		accessControl = null;
 	};
@@ -132,9 +119,6 @@
 
 			auth_type = connection?.auth_type ?? 'bearer';
 			key = connection?.key ?? '';
-
-			name = connection.info?.name ?? '';
-			description = connection.info?.description ?? '';
 
 			enable = connection.config?.enable ?? true;
 			accessControl = connection.config?.access_control ?? null;
@@ -237,11 +221,12 @@
 								</div>
 
 								<div class="flex-1 flex items-center">
+									<div class="text-sm">/</div>
 									<input
 										class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
 										type="text"
 										bind:value={path}
-										placeholder={$i18n.t('openapi.json URL or Path')}
+										placeholder={$i18n.t('openapi.json Path')}
 										autocomplete="off"
 										required
 									/>
@@ -251,7 +236,7 @@
 
 						<div class="text-xs text-gray-500 mt-1">
 							{$i18n.t(`WebUI will make requests to "{{url}}"`, {
-								url: path.includes('://') ? path : `${url}${path.startsWith('/') ? '' : '/'}${path}`
+								url: `${url}/${path}`
 							})}
 						</div>
 
@@ -289,39 +274,6 @@
 						</div>
 
 						{#if !direct}
-							<hr class=" border-gray-100 dark:border-gray-700/10 my-2.5 w-full" />
-
-							<div class="flex gap-2">
-								<div class="flex flex-col w-full">
-									<div class=" mb-0.5 text-xs text-gray-500">{$i18n.t('Name')}</div>
-
-									<div class="flex-1">
-										<input
-											class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
-											type="text"
-											bind:value={name}
-											placeholder={$i18n.t('Enter name')}
-											autocomplete="off"
-											required
-										/>
-									</div>
-								</div>
-							</div>
-
-							<div class="flex flex-col w-full mt-2">
-								<div class=" mb-1 text-xs text-gray-500">{$i18n.t('Description')}</div>
-
-								<div class="flex-1">
-									<input
-										class="w-full text-sm bg-transparent placeholder:text-gray-300 dark:placeholder:text-gray-700 outline-hidden"
-										type="text"
-										bind:value={description}
-										placeholder={$i18n.t('Enter description')}
-										autocomplete="off"
-									/>
-								</div>
-							</div>
-
 							<hr class=" border-gray-100 dark:border-gray-700/10 my-2.5 w-full" />
 
 							<div class="my-2 -mx-2">

@@ -64,12 +64,9 @@ export const updateAudioConfig = async (token: string, payload: OpenAIConfigForm
 	return res;
 };
 
-export const transcribeAudio = async (token: string, file: File, language?: string) => {
+export const transcribeAudio = async (token: string, file: File) => {
 	const data = new FormData();
 	data.append('file', file);
-	if (language) {
-		data.append('language', language);
-	}
 
 	let error = null;
 	const res = await fetch(`${AUDIO_API_BASE_URL}/transcriptions`, {

@@ -1,12 +1,13 @@
 from typing import Optional, List, Dict, Any, Union
 import logging
 import time  # for measuring elapsed time
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import ServerlessSpec
 
 import asyncio  # for async upserts
 import functools  # for partial binding in async tasks
 
 import concurrent.futures  # for parallel batch upserts
+from pinecone.grpc import PineconeGRPC  # use gRPC client for faster upserts
 
 from open_webui.retrieval.vector.main import (
     VectorDBBase,
@@ -46,8 +47,10 @@ class PineconeClient(VectorDBBase):
         self.metric = PINECONE_METRIC
         self.cloud = PINECONE_CLOUD
 
-        # Initialize Pinecone client for improved performance
-        self.client = Pinecone(api_key=self.api_key)
+        # Initialize Pinecone gRPC client for improved performance
+        self.client = PineconeGRPC(
+            api_key=self.api_key, environment=self.environment, cloud=self.cloud
+        )
 
         # Persistent executor for batch operations
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
@@ -144,8 +147,8 @@ class PineconeClient(VectorDBBase):
         metadatas = []
 
         for match in matches:
-            metadata = getattr(match, "metadata", {}) or {}
-            ids.append(match.id if hasattr(match, "id") else match["id"])
+            metadata = match.get("metadata", {})
+            ids.append(match["id"])
             documents.append(metadata.get("text", ""))
             metadatas.append(metadata)
 
@@ -171,8 +174,7 @@ class PineconeClient(VectorDBBase):
                 filter={"collection_name": collection_name_with_prefix},
                 include_metadata=False,
             )
-            matches = getattr(response, "matches", []) or []
-            return len(matches) > 0
+            return len(response.matches) > 0
         except Exception as e:
             log.exception(
                 f"Error checking collection '{collection_name_with_prefix}': {e}"
@@ -319,6 +321,32 @@ class PineconeClient(VectorDBBase):
             f"Successfully async upserted {len(points)} vectors in batches into '{collection_name_with_prefix}'"
         )
 
+    def streaming_upsert(self, collection_name: str, items: List[VectorItem]) -> None:
+        """Perform a streaming upsert over gRPC for performance testing."""
+        if not items:
+            log.warning("No items to upsert via streaming")
+            return
+
+        collection_name_with_prefix = self._get_collection_name_with_prefix(
+            collection_name
+        )
+        points = self._create_points(items, collection_name_with_prefix)
+
+        # Open a streaming upsert channel
+        stream = self.index.streaming_upsert()
+        try:
+            for point in points:
+                # send each point over the stream
+                stream.send(point)
+            # close the stream to finalize
+            stream.close()
+            log.info(
+                f"Successfully streamed upsert of {len(points)} vectors into '{collection_name_with_prefix}'"
+            )
+        except Exception as e:
+            log.error(f"Error during streaming upsert: {e}")
+            raise
+
     def search(
         self, collection_name: str, vectors: List[List[Union[float, int]]], limit: int
     ) -> Optional[SearchResult]:
@@ -346,8 +374,7 @@ class PineconeClient(VectorDBBase):
                 filter={"collection_name": collection_name_with_prefix},
             )
 
-            matches = getattr(query_response, "matches", []) or []
-            if not matches:
+            if not query_response.matches:
                 # Return empty result if no matches
                 return SearchResult(
                     ids=[[]],
@@ -357,13 +384,13 @@ class PineconeClient(VectorDBBase):
                 )
 
             # Convert to GetResult format
-            get_result = self._result_to_get_result(matches)
+            get_result = self._result_to_get_result(query_response.matches)
 
             # Calculate normalized distances based on metric
             distances = [
                 [
-                    self._normalize_distance(getattr(match, "score", 0.0))
-                    for match in matches
+                    self._normalize_distance(match.score)
+                    for match in query_response.matches
                 ]
             ]
 
@@ -405,8 +432,7 @@ class PineconeClient(VectorDBBase):
                 include_metadata=True,
             )
 
-            matches = getattr(query_response, "matches", []) or []
-            return self._result_to_get_result(matches)
+            return self._result_to_get_result(query_response.matches)
 
         except Exception as e:
             log.error(f"Error querying collection '{collection_name}': {e}")
@@ -430,8 +456,7 @@ class PineconeClient(VectorDBBase):
                 filter={"collection_name": collection_name_with_prefix},
             )
 
-            matches = getattr(query_response, "matches", []) or []
-            return self._result_to_get_result(matches)
+            return self._result_to_get_result(query_response.matches)
 
         except Exception as e:
             log.error(f"Error getting collection '{collection_name}': {e}")
@@ -491,12 +516,12 @@ class PineconeClient(VectorDBBase):
             raise
 
     def close(self):
-        """Shut down resources."""
+        """Shut down the gRPC channel and thread pool."""
         try:
-            # The new Pinecone client doesn't need explicit closing
-            pass
+            self.client.close()
+            log.info("Pinecone gRPC channel closed.")
         except Exception as e:
-            log.warning(f"Failed to clean up Pinecone resources: {e}")
+            log.warning(f"Failed to close Pinecone gRPC channel: {e}")
         self._executor.shutdown(wait=True)
 
     def __enter__(self):

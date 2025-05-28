@@ -13,9 +13,11 @@ def get_function_module(request, function_id):
     """
     Get the function module by its ID.
     """
-
-    function_module, _, _ = load_function_module_by_id(function_id)
-    request.app.state.FUNCTIONS[function_id] = function_module
+    if function_id in request.app.state.FUNCTIONS:
+        function_module = request.app.state.FUNCTIONS[function_id]
+    else:
+        function_module, _, _ = load_function_module_by_id(function_id)
+        request.app.state.FUNCTIONS[function_id] = function_module
 
     return function_module
 
@@ -37,17 +39,14 @@ def get_sorted_filter_ids(request, model: dict, enabled_filter_ids: list = None)
         for function in Functions.get_functions_by_type("filter", active_only=True)
     ]
 
-    def get_active_status(filter_id):
+    for filter_id in active_filter_ids:
         function_module = get_function_module(request, filter_id)
 
-        if getattr(function_module, "toggle", None):
-            return filter_id in (enabled_filter_ids or [])
-
-        return True
-
-    active_filter_ids = [
-        filter_id for filter_id in active_filter_ids if get_active_status(filter_id)
-    ]
+        if getattr(function_module, "toggle", None) and (
+            filter_id not in enabled_filter_ids
+        ):
+            active_filter_ids.remove(filter_id)
+            continue
 
     filter_ids = [fid for fid in filter_ids if fid in active_filter_ids]
     filter_ids.sort(key=get_priority)

@@ -212,8 +212,6 @@
 
 		speaking = true;
 
-		const content = removeAllDetails(content);
-
 		if ($config.audio.tts.engine === '') {
 			let voices = [];
 			const getVoicesLoop = setInterval(() => {
@@ -230,7 +228,7 @@
 
 					console.log(voice);
 
-					const speak = new SpeechSynthesisUtterance(content);
+					const speak = new SpeechSynthesisUtterance(message.content);
 					speak.rate = $settings.audio?.tts?.playbackRate ?? 1;
 
 					console.log(speak);
@@ -253,7 +251,7 @@
 			loadingSpeech = true;
 
 			const messageContentParts: string[] = getMessageContentParts(
-				content,
+				message.content,
 				$config?.audio?.tts?.split_on ?? 'punctuation'
 			);
 

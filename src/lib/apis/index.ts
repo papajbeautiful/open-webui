@@ -346,15 +346,11 @@ export const getToolServersData = async (i18n, servers: object[]) => {
 				.map(async (server) => {
 					const data = await getToolServerData(
 						(server?.auth_type ?? 'bearer') === 'bearer' ? server?.key : localStorage.token,
-						(server?.path ?? '').includes('://')
-							? server?.path
-							: `${server?.url}${(server?.path ?? '').startsWith('/') ? '' : '/'}${server?.path}`
+						server?.url + '/' + (server?.path ?? 'openapi.json')
 					).catch((err) => {
 						toast.error(
 							i18n.t(`Failed to connect to {{URL}} OpenAPI tool server`, {
-								URL: (server?.path ?? '').includes('://')
-									? server?.path
-									: `${server?.url}${(server?.path ?? '').startsWith('/') ? '' : '/'}${server?.path}`
+								URL: server?.url + '/' + (server?.path ?? 'openapi.json')
 							})
 						);
 						return null;

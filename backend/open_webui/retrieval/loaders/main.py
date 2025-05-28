@@ -226,7 +226,7 @@ class Loader:
                 api_key=self.kwargs.get("EXTERNAL_DOCUMENT_LOADER_API_KEY"),
                 mime_type=file_content_type,
             )
-        elif self.engine == "tika" and self.kwargs.get("TIKA_SERVER_URL"):
+        if self.engine == "tika" and self.kwargs.get("TIKA_SERVER_URL"):
             if self._is_text_file(file_ext, file_content_type):
                 loader = TextLoader(file_path, autodetect_encoding=True)
             else:

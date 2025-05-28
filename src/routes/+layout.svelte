@@ -7,7 +7,7 @@
 		stiffness: 0.05
 	});
 
-	import { onMount, tick, setContext, onDestroy } from 'svelte';
+	import { onMount, tick, setContext } from 'svelte';
 	import {
 		config,
 		user,
@@ -454,7 +454,6 @@
 		}
 	};
 
-	const TOKEN_EXPIRY_BUFFER = 60; // seconds
 	const checkTokenExpiry = async () => {
 		const exp = $user?.expires_at; // token expiry time in unix timestamp
 		const now = Math.floor(Date.now() / 1000); // current time in unix timestamp
@@ -464,7 +463,7 @@
 			return;
 		}
 
-		if (now >= exp - TOKEN_EXPIRY_BUFFER) {
+		if (now >= exp) {
 			const res = await userSignOut();
 			user.set(null);
 			localStorage.removeItem('token');
@@ -509,9 +508,6 @@
 			if (document.visibilityState === 'visible') {
 				isLastActiveTab.set(true); // This tab is now the active tab
 				bc.postMessage('active'); // Notify other tabs that this tab is active
-
-				// Check token expiry when the tab becomes active
-				checkTokenExpiry();
 			}
 		};
 
@@ -541,12 +537,6 @@
 
 				$socket?.on('chat-events', chatEventHandler);
 				$socket?.on('channel-events', channelEventHandler);
-
-				// Set up the token expiry check
-				if (tokenTimer) {
-					clearInterval(tokenTimer);
-				}
-				tokenTimer = setInterval(checkTokenExpiry, 15000);
 			} else {
 				$socket?.off('chat-events', chatEventHandler);
 				$socket?.off('channel-events', channelEventHandler);
@@ -599,6 +589,12 @@
 
 						await user.set(sessionUser);
 						await config.set(await getBackendConfig());
+
+						// Set up the token expiry check
+						if (tokenTimer) {
+							clearInterval(tokenTimer);
+						}
+						tokenTimer = setInterval(checkTokenExpiry, 1000);
 					} else {
 						// Redirect Invalid Session User to /auth Page
 						localStorage.removeItem('token');
