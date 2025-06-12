@@ -688,22 +688,9 @@ def transcription_handler(request, file_path, metadata):
 
         # IF NO LOCALES, USE DEFAULTS
         if len(locales) < 2:
-            locales = [
-                "en-US",
-                "es-ES", 
-                "es-MX",
-                "fr-FR",
-                "hi-IN",
-                "it-IT",
-                "de-DE",
-                "en-GB",
-                "en-IN",
-                "ja-JP",
-                "ko-KR",
-                "pt-BR",
-                "zh-CN",
-            ]
-            locales = ",".join(locales)
+            locales = ["en-US"]  # Simplified for now
+        else:
+            locales = locales.split(",")
 
         if not api_key or not region:
             raise HTTPException(
@@ -713,29 +700,31 @@ def transcription_handler(request, file_path, metadata):
 
         r = None
         try:
-            # Prepare the request - BACK TO ORIGINAL APPROACH
+            # Prepare the request - FAST TRANSCRIPTION API
             data = {
-                "definition": json.dumps(
-                    {
-                        "locales": locales.split(","),
-                        "diarization": {"maxSpeakers": max_speakers, "enabled": True},
-                    }
-                    if locales
-                    else {}
-                )
+                "definition": json.dumps({
+                    "locales": locales,
+                    "diarizationSettings": {
+                        "minSpeakers": 1,
+                        "maxSpeakers": max_speakers
+                    },
+                    "profanityFilterMode": "Masked"
+                })
             }
 
-            # USE FAST TRANSCRIPTION API ENDPOINT
+            # CORRECT FAST TRANSCRIPTION API ENDPOINT
             url = (
                 base_url or f"https://{region}.api.cognitive.microsoft.com"
-            ) + "/speechtotext/transcriptions:transcribe?api-version=2023-12-01-preview"
+            ) + "/speechtotext/transcriptions:transcribe?api-version=2024-11-15"
+
+            log.info(f"Azure Fast Transcription URL: {url}")
 
             # Use context manager to ensure file is properly closed
             with open(file_path, "rb") as audio_file:
                 r = requests.post(
                     url=url,
-                    files={"audio": audio_file},  # ORIGINAL FORM DATA APPROACH
-                    data=data,                    # ORIGINAL DEFINITION DATA
+                    files={"audio": audio_file},
+                    data=data,
                     headers={
                         "Ocp-Apim-Subscription-Key": api_key,
                     },
@@ -747,23 +736,26 @@ def transcription_handler(request, file_path, metadata):
             # Log the response
             log.info(f"Azure Fast Transcription Response: {json.dumps(response, indent=2)}")
 
-            # Extract transcript from response (fast transcription format)
-            if not response.get("combinedPhrases"):
-                raise ValueError("No transcription found in response")
+            # Extract transcript from fast transcription response
+            if "combinedPhrases" in response and len(response["combinedPhrases"]) > 0:
+                transcript = response["combinedPhrases"][0].get("text", "").strip()
+                if transcript:
+                    data = {"text": transcript}
+                    
+                    # Save transcript to json file
+                    transcript_file = f"{file_dir}/{id}.json"
+                    with open(transcript_file, "w") as f:
+                        json.dump(data, f)
 
-            # Get the full transcript from combinedPhrases
-            transcript = response["combinedPhrases"][0].get("text", "").strip()
-            if not transcript:
-                raise ValueError("Empty transcript in response")
-
-            data = {"text": transcript}
-
-            # Save transcript to json file (consistent with other providers)
+                    log.debug(data)
+                    return data
+            
+            # Handle empty transcript
+            log.warning("Azure returned empty transcript")
+            data = {"text": ""}
             transcript_file = f"{file_dir}/{id}.json"
             with open(transcript_file, "w") as f:
                 json.dump(data, f)
-
-            log.debug(data)
             return data
 
         except (KeyError, IndexError, ValueError) as e:
