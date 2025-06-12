@@ -290,5 +290,8 @@
 						</svg>
 						<div class="line-clamp-1">{$i18n.t('SharePoint')}</div>
 					</DropdownMenu.Item>
+				{/if}
+			{/if}
+		</DropdownMenu.Content>	
 	</div>
 </Dropdown>
