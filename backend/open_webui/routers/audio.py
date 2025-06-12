@@ -727,7 +727,7 @@ def transcription_handler(request, file_path, metadata):
 
             url = (
                 base_url or f"https://{region}.api.cognitive.microsoft.com"
-            ) + "/speechtotext/transcriptions:transcribe?api-version=2024-11-15"
+            ) + "/speechtotext/transcriptions:transcribe?api-version=2023-12-01-preview"
 
             # Use context manager to ensure file is properly closed
             with open(file_path, "rb") as audio_file:
