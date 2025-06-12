@@ -687,10 +687,10 @@ def transcription_handler(request, file_path, metadata):
         max_speakers = request.app.state.config.AUDIO_STT_AZURE_MAX_SPEAKERS or 3
 
         # IF NO LOCALES, USE DEFAULTS
-        if len(locales) < 2:
-            locales = ["en-US"]  # Simplified for now
+        if not locales or len(locales.strip()) < 2:
+            locales_list = ["en-US"]
         else:
-            locales = locales.split(",")
+            locales_list = [loc.strip() for loc in locales.split(",")]
 
         if not api_key or not region:
             raise HTTPException(
@@ -701,35 +701,56 @@ def transcription_handler(request, file_path, metadata):
         r = None
         try:
             # Prepare the request - FAST TRANSCRIPTION API
-            data = {
-                "definition": json.dumps({
-                    "locales": locales,
-                    "diarizationSettings": {
-                        "minSpeakers": 1,
-                        "maxSpeakers": max_speakers
-                    },
-                    "profanityFilterMode": "Masked"
-                })
+            definition_data = {
+                "locales": locales_list,
+                "profanityFilterMode": "Masked"
             }
 
-            # CORRECT FAST TRANSCRIPTION API ENDPOINT
+            # Add diarization if multiple speakers
+            if max_speakers > 1:
+                definition_data["diarizationSettings"] = {
+                    "minSpeakers": 1,
+                    "maxSpeakers": max_speakers
+                }
+
+            data = {
+                "definition": json.dumps(definition_data)
+            }
+
+            # FAST TRANSCRIPTION API ENDPOINT
             url = (
                 base_url or f"https://{region}.api.cognitive.microsoft.com"
             ) + "/speechtotext/transcriptions:transcribe?api-version=2024-11-15"
 
             log.info(f"Azure Fast Transcription URL: {url}")
+            log.info(f"Definition data: {definition_data}")
+            log.info(f"File size: {file_size} bytes")
+            log.info(f"File path: {file_path}")
 
             # Use context manager to ensure file is properly closed
             with open(file_path, "rb") as audio_file:
+                files = {"audio": audio_file}
+                
+                log.info(f"Making request to Azure with files: {list(files.keys())}")
+                log.info(f"Making request to Azure with data: {list(data.keys())}")
+                
                 r = requests.post(
                     url=url,
-                    files={"audio": audio_file},
+                    files=files,
                     data=data,
                     headers={
                         "Ocp-Apim-Subscription-Key": api_key,
+                        "Accept": "application/json"
                     },
+                    timeout=30  # Add timeout
                 )
 
+            log.info(f"Azure response status: {r.status_code}")
+            log.info(f"Azure response headers: {dict(r.headers)}")
+            
+            if r.status_code != 200:
+                log.error(f"Azure response text: {r.text}")
+            
             r.raise_for_status()
             response = r.json()
 
@@ -740,45 +761,53 @@ def transcription_handler(request, file_path, metadata):
             if "combinedPhrases" in response and len(response["combinedPhrases"]) > 0:
                 transcript = response["combinedPhrases"][0].get("text", "").strip()
                 if transcript:
-                    data = {"text": transcript}
+                    data_result = {"text": transcript}
                     
                     # Save transcript to json file
                     transcript_file = f"{file_dir}/{id}.json"
                     with open(transcript_file, "w") as f:
-                        json.dump(data, f)
+                        json.dump(data_result, f)
 
-                    log.debug(data)
-                    return data
+                    log.info(f"Successfully transcribed: {transcript}")
+                    return data_result
             
             # Handle empty transcript
             log.warning("Azure returned empty transcript")
-            data = {"text": ""}
+            data_result = {"text": ""}
             transcript_file = f"{file_dir}/{id}.json"
             with open(transcript_file, "w") as f:
-                json.dump(data, f)
-            return data
+                json.dump(data_result, f)
+            return data_result
 
-        except (KeyError, IndexError, ValueError) as e:
-            log.exception("Error parsing Azure response")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to parse Azure response: {str(e)}",
-            )
         except requests.exceptions.RequestException as e:
-            log.exception(e)
+            log.exception(f"Request exception: {e}")
             detail = None
 
             try:
-                if r is not None and r.status_code != 200:
-                    res = r.json()
-                    if "error" in res:
-                        detail = f"External: {res['error'].get('message', '')}"
-            except Exception:
+                if r is not None:
+                    log.error(f"Response status: {r.status_code}")
+                    log.error(f"Response text: {r.text}")
+                    
+                    if r.status_code != 200:
+                        try:
+                            res = r.json()
+                            if "error" in res:
+                                detail = f"External: {res['error'].get('message', '')}"
+                        except:
+                            detail = f"External: HTTP {r.status_code}: {r.text}"
+            except Exception as parse_error:
+                log.error(f"Error parsing response: {parse_error}")
                 detail = f"External: {e}"
 
             raise HTTPException(
                 status_code=getattr(r, "status_code", 500) if r else 500,
-                detail=detail if detail else "Open WebUI: Server Connection Error",
+                detail=detail if detail else f"Open WebUI: Server Connection Error - {str(e)}",
+            )
+        except Exception as e:
+            log.exception(f"General exception: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to parse Azure response: {str(e)}",
             )
 
 
