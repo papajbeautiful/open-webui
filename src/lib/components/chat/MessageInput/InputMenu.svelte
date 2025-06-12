@@ -278,25 +278,17 @@
 							class="w-5 h-5"
 							fill="none"
 						>
-							<rect width="32" height="32" rx="3" fill="#036C70"/>
-							<path
-								d="M12.5 8.5h7c1.38 0 2.5 1.12 2.5 2.5v10c0 1.38-1.12 2.5-2.5 2.5h-7c-1.38 0-2.5-1.12-2.5-2.5V11c0-1.38 1.12-2.5 2.5-2.5z"
-								fill="white"
-							/>
-							<path
-								d="M14 12h4v1.5h-4V12zm0 3h4v1.5h-4V15zm0 3h3v1.5h-3V18z"
-								fill="#036C70"
-							/>
-							<circle cx="25" cy="9" r="4" fill="#0078D4"/>
-							<path
-								d="M23 7.5h4v3h-4v-3z"
-								fill="white"
-							/>
+							<!-- Background circles -->
+							<circle cx="22" cy="10" r="8" fill="#0F7B82"/>
+							<circle cx="20" cy="18" r="7" fill="#16A085"/>
+							<circle cx="12" cy="20" r="6" fill="#1ABC9C"/>
+							<circle cx="18" cy="24" r="5" fill="#48C9B0"/>
+							
+							<!-- Main SharePoint square with S -->
+							<rect x="6" y="8" width="14" height="14" rx="2" fill="#0F7B82"/>
+							<text x="13" y="18" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">S</text>
 						</svg>
 						<div class="line-clamp-1">{$i18n.t('SharePoint')}</div>
 					</DropdownMenu.Item>
-				{/if}
-			{/if}
-		</DropdownMenu.Content>
 	</div>
 </Dropdown>
