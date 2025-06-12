@@ -682,8 +682,28 @@ def transcription_handler(request, file_path, metadata):
 
         api_key = request.app.state.config.AUDIO_STT_AZURE_API_KEY
         region = request.app.state.config.AUDIO_STT_AZURE_REGION or "eastus"
-        locales = request.app.state.config.AUDIO_STT_AZURE_LOCALES or "en-US"
+        locales = request.app.state.config.AUDIO_STT_AZURE_LOCALES
         base_url = request.app.state.config.AUDIO_STT_AZURE_BASE_URL
+        max_speakers = request.app.state.config.AUDIO_STT_AZURE_MAX_SPEAKERS or 3
+
+        # IF NO LOCALES, USE DEFAULTS
+        if len(locales) < 2:
+            locales = [
+                "en-US",
+                "es-ES", 
+                "es-MX",
+                "fr-FR",
+                "hi-IN",
+                "it-IT",
+                "de-DE",
+                "en-GB",
+                "en-IN",
+                "ja-JP",
+                "ko-KR",
+                "pt-BR",
+                "zh-CN",
+            ]
+            locales = ",".join(locales)
 
         if not api_key or not region:
             raise HTTPException(
@@ -693,74 +713,58 @@ def transcription_handler(request, file_path, metadata):
 
         r = None
         try:
-            # Detect audio format and set appropriate Content-Type
-            mime_type, _ = mimetypes.guess_type(file_path)
-            if file_path.endswith('.mp3'):
-                content_type = "audio/mpeg"
-            elif file_path.endswith('.wav'):
-                content_type = "audio/wav"
-            elif file_path.endswith('.webm'):
-                content_type = "audio/webm"
-            elif file_path.endswith('.ogg'):
-                content_type = "audio/ogg"
-            else:
-                content_type = mime_type or "audio/wav"  # fallback
+            # Prepare the request - BACK TO ORIGINAL APPROACH
+            data = {
+                "definition": json.dumps(
+                    {
+                        "locales": locales.split(","),
+                        "diarization": {"maxSpeakers": max_speakers, "enabled": True},
+                    }
+                    if locales
+                    else {}
+                )
+            }
 
-            log.info(f"Sending audio file: {file_path}, size: {file_size} bytes, content-type: {content_type}")
-
-            # Construct the URL with language parameter
+            # USE FAST TRANSCRIPTION API ENDPOINT
             url = (
-                base_url or f"https://{region}.stt.speech.microsoft.com"
-            ) + f"/speech/recognition/conversation/cognitiveservices/v1?language={locales}"
+                base_url or f"https://{region}.api.cognitive.microsoft.com"
+            ) + "/speechtotext/transcriptions:transcribe?api-version=2023-12-01-preview"
 
-            # Read audio file as binary data
+            # Use context manager to ensure file is properly closed
             with open(file_path, "rb") as audio_file:
-                audio_data = audio_file.read()
-
-            # Make request with audio in body
-            r = requests.post(
-                url=url,
-                data=audio_data,
-                headers={
-                    "Ocp-Apim-Subscription-Key": api_key,
-                    "Content-Type": content_type,
-                    "Accept": "application/json",
-                },
-            )
+                r = requests.post(
+                    url=url,
+                    files={"audio": audio_file},  # ORIGINAL FORM DATA APPROACH
+                    data=data,                    # ORIGINAL DEFINITION DATA
+                    headers={
+                        "Ocp-Apim-Subscription-Key": api_key,
+                    },
+                )
 
             r.raise_for_status()
             response = r.json()
 
-            # Log the response for debugging
-            log.info(f"Azure STT Response: {json.dumps(response, indent=2)}")
+            # Log the response
+            log.info(f"Azure Fast Transcription Response: {json.dumps(response, indent=2)}")
 
-            # Handle different response scenarios
-            if response.get("RecognitionStatus") == "Success":
-                transcript = response.get("DisplayText", "").strip()
-                if transcript:
-                    data = {"text": transcript}
-                    
-                    # Save transcript to json file
-                    transcript_file = f"{file_dir}/{id}.json"
-                    with open(transcript_file, "w") as f:
-                        json.dump(data, f)
+            # Extract transcript from response (fast transcription format)
+            if not response.get("combinedPhrases"):
+                raise ValueError("No transcription found in response")
 
-                    log.debug(data)
-                    return data
-                else:
-                    # Empty transcript but successful recognition = silence or no speech
-                    log.warning("Azure returned successful recognition but empty transcript - audio may contain no speech")
-                    data = {"text": ""}
-                    
-                    transcript_file = f"{file_dir}/{id}.json"
-                    with open(transcript_file, "w") as f:
-                        json.dump(data, f)
-                    
-                    return data
-            else:
-                # Recognition failed
-                status = response.get("RecognitionStatus", "Unknown")
-                raise ValueError(f"Azure recognition failed with status: {status}")
+            # Get the full transcript from combinedPhrases
+            transcript = response["combinedPhrases"][0].get("text", "").strip()
+            if not transcript:
+                raise ValueError("Empty transcript in response")
+
+            data = {"text": transcript}
+
+            # Save transcript to json file (consistent with other providers)
+            transcript_file = f"{file_dir}/{id}.json"
+            with open(transcript_file, "w") as f:
+                json.dump(data, f)
+
+            log.debug(data)
+            return data
 
         except (KeyError, IndexError, ValueError) as e:
             log.exception("Error parsing Azure response")
