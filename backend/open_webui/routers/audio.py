@@ -667,7 +667,7 @@ def transcription_handler(request, file_path, metadata):
                     detail = f"External: {e}"
             raise Exception(detail if detail else "Open WebUI: Server Connection Error")
 
-    elif request.app.state.config.STT_ENGINE == "azure":
+elif request.app.state.config.STT_ENGINE == "azure":
     # Check file exists and size
     if not os.path.exists(file_path):
         raise HTTPException(status_code=400, detail="Audio file not found")
