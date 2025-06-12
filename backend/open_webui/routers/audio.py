@@ -693,6 +693,21 @@ def transcription_handler(request, file_path, metadata):
 
         r = None
         try:
+            # Detect audio format and set appropriate Content-Type
+            mime_type, _ = mimetypes.guess_type(file_path)
+            if file_path.endswith('.mp3'):
+                content_type = "audio/mpeg"
+            elif file_path.endswith('.wav'):
+                content_type = "audio/wav"
+            elif file_path.endswith('.webm'):
+                content_type = "audio/webm"
+            elif file_path.endswith('.ogg'):
+                content_type = "audio/ogg"
+            else:
+                content_type = mime_type or "audio/wav"  # fallback
+
+            log.info(f"Sending audio file: {file_path}, size: {file_size} bytes, content-type: {content_type}")
+
             # Construct the URL with language parameter
             url = (
                 base_url or f"https://{region}.stt.speech.microsoft.com"
@@ -702,13 +717,13 @@ def transcription_handler(request, file_path, metadata):
             with open(file_path, "rb") as audio_file:
                 audio_data = audio_file.read()
 
-            # Make request with audio in body (not as form data)
+            # Make request with audio in body
             r = requests.post(
                 url=url,
-                data=audio_data,  # Audio goes in body
+                data=audio_data,
                 headers={
                     "Ocp-Apim-Subscription-Key": api_key,
-                    "Content-Type": "audio/wav",  # Specify audio format
+                    "Content-Type": content_type,
                     "Accept": "application/json",
                 },
             )
@@ -716,36 +731,36 @@ def transcription_handler(request, file_path, metadata):
             r.raise_for_status()
             response = r.json()
 
-            # Log the full response to see what Azure is returning
+            # Log the response for debugging
             log.info(f"Azure STT Response: {json.dumps(response, indent=2)}")
 
-            # Try different possible response fields
-            transcript = ""
-            if "DisplayText" in response:
-                transcript = response["DisplayText"].strip()
-            elif "Text" in response:
-                transcript = response["Text"].strip()
-            elif "NBest" in response and len(response["NBest"]) > 0:
-                transcript = response["NBest"][0].get("Display", "").strip()
-            elif "RecognitionStatus" in response:
-                log.error(f"Azure recognition failed with status: {response['RecognitionStatus']}")
-                if response["RecognitionStatus"] != "Success":
-                    raise ValueError(f"Azure recognition failed: {response.get('RecognitionStatus', 'Unknown error')}")
+            # Handle different response scenarios
+            if response.get("RecognitionStatus") == "Success":
+                transcript = response.get("DisplayText", "").strip()
+                if transcript:
+                    data = {"text": transcript}
+                    
+                    # Save transcript to json file
+                    transcript_file = f"{file_dir}/{id}.json"
+                    with open(transcript_file, "w") as f:
+                        json.dump(data, f)
 
-            if not transcript:
-                # Log the full response structure for debugging
-                log.error(f"No transcript found in Azure response. Response keys: {list(response.keys())}")
-                raise ValueError("Empty transcript in response")
-
-            data = {"text": transcript}
-
-            # Save transcript to json file (consistent with other providers)
-            transcript_file = f"{file_dir}/{id}.json"
-            with open(transcript_file, "w") as f:
-                json.dump(data, f)
-
-            log.debug(data)
-            return data
+                    log.debug(data)
+                    return data
+                else:
+                    # Empty transcript but successful recognition = silence or no speech
+                    log.warning("Azure returned successful recognition but empty transcript - audio may contain no speech")
+                    data = {"text": ""}
+                    
+                    transcript_file = f"{file_dir}/{id}.json"
+                    with open(transcript_file, "w") as f:
+                        json.dump(data, f)
+                    
+                    return data
+            else:
+                # Recognition failed
+                status = response.get("RecognitionStatus", "Unknown")
+                raise ValueError(f"Azure recognition failed with status: {status}")
 
         except (KeyError, IndexError, ValueError) as e:
             log.exception("Error parsing Azure response")
