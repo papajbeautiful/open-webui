@@ -716,9 +716,25 @@ def transcription_handler(request, file_path, metadata):
             r.raise_for_status()
             response = r.json()
 
-            # Extract transcript from response
-            transcript = response.get("DisplayText", "").strip()
+            # Log the full response to see what Azure is returning
+            log.info(f"Azure STT Response: {json.dumps(response, indent=2)}")
+
+            # Try different possible response fields
+            transcript = ""
+            if "DisplayText" in response:
+                transcript = response["DisplayText"].strip()
+            elif "Text" in response:
+                transcript = response["Text"].strip()
+            elif "NBest" in response and len(response["NBest"]) > 0:
+                transcript = response["NBest"][0].get("Display", "").strip()
+            elif "RecognitionStatus" in response:
+                log.error(f"Azure recognition failed with status: {response['RecognitionStatus']}")
+                if response["RecognitionStatus"] != "Success":
+                    raise ValueError(f"Azure recognition failed: {response.get('RecognitionStatus', 'Unknown error')}")
+
             if not transcript:
+                # Log the full response structure for debugging
+                log.error(f"No transcript found in Azure response. Response keys: {list(response.keys())}")
                 raise ValueError("Empty transcript in response")
 
             data = {"text": transcript}
