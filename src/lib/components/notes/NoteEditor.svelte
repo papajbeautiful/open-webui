@@ -493,8 +493,9 @@ Input will be provided within <notes> and <context> XML tags, providing a struct
 
 # Output Format
 
-1. Provide the enhanced notes in markdown format. Use markdown syntax for headings, lists, and emphasis to improve clarity and presentation. Ensure that all integrated content from the context is accurately reflected. Return only the markdown formatted note.
-2. Print the entire transcript with diarization to identify different speakers.
+1. **Notes** Provide the enhanced noted in markdown format. Use markdown syntax for headings, lists, and emphasis to improve clarity and presentation. Ensure that all integrated content from the context is accurately reflected. Return only the markdown formatted note.
+2. **Transcript** If the notes were generated from a transcript, print the entire transcript with diarization to identify different speakers.
+3. **Speakers** If a transcript was generated, ask the user if they want to correctly identiy the speakers and then regenerate the output. Provide a template for them to complete, for example: Speaker 1 = [user inputs name], etc..
 
 `;
 
