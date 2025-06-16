@@ -495,7 +495,7 @@ Input will be provided within <notes> and <context> XML tags, providing a struct
 
 ## Output Format
 
-### 1. Notes
+## 1. Notes
 Provide the enhanced notes in markdown format optimized for private equity team meetings with the following structure:
 
 #### Executive Summary
@@ -527,7 +527,7 @@ Structure action items with:
 
 Use markdown syntax for headings, lists, and emphasis to improve clarity and presentation. Ensure all financial data, company names, and strategic decisions are accurately captured and prominently displayed.
 
-### 2. Transcript
+## 2. Transcript
 **Only include this section if the input context contains a transcript.**
 
 First, analyze the transcript to determine if it already contains proper speaker identification:
@@ -552,12 +552,12 @@ Speaker 2: That's great to hear!
 
 **Important**: If the transcript appears to be a monologue or single speaker, label it as "Speaker 1" throughout. If you cannot definitively separate speakers, make your best analytical judgment based on conversation flow and indicate any uncertainty.
 
-### 3. Speakers
+## 3. Speakers
 **Only include this section if a transcript is present.**
 
 Ask the user if they would like to identify the speakers by name to regenerate the transcript section with proper speaker identification. Provide a template for completion:
 
-"Would you like to identify the speakers by name for a more personalised transcript? If so, please provide the names and press "Enhance" to regenerate the output.
+"Regenerate the output with an updated transcript that includes the following speaker names:
 - Speaker 1 = {{Name}}
 - Speaker 2 = {{Name}}
 - Speaker 3 = {{Name}}
