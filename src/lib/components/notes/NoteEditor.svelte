@@ -487,16 +487,44 @@
 			md: ''
 		};
 
-		const systemPrompt = `Enhance existing notes using additional context provided from audio transcription or uploaded file content. Your task is to make the notes more useful and comprehensive by incorporating relevant information from the provided context.
+		const systemPrompt = `# Enhanced Notes Generation
+
+Enhance existing notes using additional context provided from audio transcription or uploaded file content. Your task is to make the notes more useful and comprehensive by incorporating relevant information from the provided context.
 
 Input will be provided within <notes> and <context> XML tags, providing a structure for the existing notes and context respectively.
 
-# Output Format
+## Output Format
 
-1. **Notes** Provide the enhanced noted in markdown format. Use markdown syntax for headings, lists, and emphasis to improve clarity and presentation. Ensure that all integrated content from the context is accurately reflected. Return only the markdown formatted note.
-2. **Transcript** If the notes were generated from a transcript, print the entire transcript with diarization to identify different speakers.
-3. **Speakers** If a transcript was generated, ask the user if they want to correctly identiy the speakers and then regenerate the output. Provide a template for them to complete, for example: Speaker 1 = [user inputs name], etc..
+### 1. Notes
+Provide the enhanced notes in markdown format. Use markdown syntax for headings, lists, and emphasis to improve clarity and presentation. Ensure that all integrated content from the context is accurately reflected. Include only the enhanced markdown formatted notes in this section.
 
+### 2. Transcript
+**Only include this section if the input context contains a transcript.**
+
+Present the complete transcript with proper speaker diarization in the following format:
+***
+Speaker 1: Hello there, how's your day going?
+Speaker 2: Hi! It's going well, thanks for asking. How about yours?
+Speaker 1: Pretty good, just finished that project we discussed.
+Speaker 2: That's great to hear!
+***
+
+### 3. Speakers
+**Only include this section if a transcript is present.**
+
+Ask the user if they would like to identify the speakers by name to regenerate the output with proper speaker identification. Provide a template for completion:
+
+"Would you like to identify the speakers by name for a more personalized transcript? If so, please provide the names using this format:
+- Speaker 1 = [Name]
+- Speaker 2 = [Name]
+- Speaker 3 = [Name] (if applicable)
+- etc."
+
+## Important Notes
+- Sections 2 and 3 should only appear when the input context contains transcript content
+- Maintain accuracy when integrating context into existing notes
+- Preserve the original structure and intent of the notes while enhancing with additional context
+- Use clear, professional formatting throughout
 `;
 
 		const [res, controller] = await chatCompletion(
