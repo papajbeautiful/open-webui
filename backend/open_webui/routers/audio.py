@@ -693,7 +693,7 @@ def transcription_handler(request, file_path, metadata):
         region = request.app.state.config.AUDIO_STT_AZURE_REGION or "eastus"
         locales = request.app.state.config.AUDIO_STT_AZURE_LOCALES
         base_url = request.app.state.config.AUDIO_STT_AZURE_BASE_URL
-        max_speakers = request.app.state.config.AUDIO_STT_AZURE_MAX_SPEAKERS or 3
+        max_speakers = 20
 
         # IF NO LOCALES, USE DEFAULTS
         if not locales or len(locales.strip()) < 2:
