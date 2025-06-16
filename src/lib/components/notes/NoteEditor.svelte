@@ -555,9 +555,9 @@ Speaker 2: That's great to hear!
 ### 3. Speakers
 **Only include this section if a transcript is present.**
 
-Ask the user if they would like to identify the speakers by name to regenerate the output with proper speaker identification. Provide a template for completion:
+Ask the user if they would like to identify the speakers by name to regenerate the transcript section with proper speaker identification. Provide a template for completion:
 
-"Would you like to identify the speakers by name for a more personalized transcript? If so, please provide the names and press "Enhance" to regenerate.
+"Would you like to identify the speakers by name for a more personalised transcript? If so, please provide the names and press "Enhance" to regenerate the output.
 - Speaker 1 = {{Name}}
 - Speaker 2 = {{Name}}
 - Speaker 3 = {{Name}}
@@ -568,6 +568,7 @@ Ask the user if they would like to identify the speakers by name to regenerate t
 - Maintain accuracy when integrating context into existing notes
 - Preserve the original structure and intent of the notes while enhancing with additional context
 - Use clear, professional formatting throughout
+- Do not generate any other output after section "3. Speakers"
 `;
 
 		const [res, controller] = await chatCompletion(
