@@ -515,8 +515,8 @@ Once speaker names are provided, generate an enhanced output in markdown format:
     - **Decisions Made:** [List any decisions reached during the call]
     - **Action Items:** [Mention follow-ups or tasks assigned]
 - **Full Transcript:**
-    - **{{Name1}}:** [Transcript text for this speaker]
-    - **{{Name2}}:** [Transcript text for this speaker]
+    - **Speaker {{Name1}}:** [Transcript text for this speaker]
+    - **Speaker {{Name2}}:** [Transcript text for this speaker]
     - Continue this format for all identified speakers.
 ---
 **Note:**  
