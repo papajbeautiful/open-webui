@@ -493,7 +493,9 @@ Input will be provided within <notes> and <context> XML tags, providing a struct
 
 # Output Format
 
-Provide the enhanced notes in markdown format. Use markdown syntax for headings, lists, and emphasis to improve clarity and presentation. Ensure that all integrated content from the context is accurately reflected. Return only the markdown formatted note.
+1. Provide the enhanced notes in markdown format. Use markdown syntax for headings, lists, and emphasis to improve clarity and presentation. Ensure that all integrated content from the context is accurately reflected. Return only the markdown formatted note.
+2. Print the entire transcript with diarization to identify different speakers.
+
 `;
 
 		const [res, controller] = await chatCompletion(
