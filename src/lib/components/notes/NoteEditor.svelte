@@ -480,47 +480,20 @@
 		}
 	};
 
-const enhanceCompletionHandler = async (model) => {
-  let enhancedContent = {
-    json: null,
-    html: '',
-    md: ''
-  };
-  const systemPrompt = `Enhance existing notes using additional context provided from a speech-to-text (STT) transcript or uploaded file content. Your task is to make the notes more useful and comprehensive by incorporating relevant information from the provided context.
+	const enhanceCompletionHandler = async (model) => {
+		let enhancedContent = {
+			json: null,
+			html: '',
+			md: ''
+		};
+
+		const systemPrompt = `Enhance existing notes using additional context provided from audio transcription or uploaded file content. Your task is to make the notes more useful and comprehensive by incorporating relevant information from the provided context.
+
 Input will be provided within <notes> and <context> XML tags, providing a structure for the existing notes and context respectively.
+
 # Output Format
-- Provide the enhanced notes in markdown format.
-- Use markdown syntax for headings, lists, and emphasis to improve clarity and presentation.
-- Ensure that all integrated content from the context is accurately reflected.
-- Return only the markdown formatted note.
----
-## Additional Functionality: STT Transcript Detected
-If a speech-to-text (STT) transcript is detected in the input, perform the following additional steps:
-### Speaker Identification & User Input
-1. **Extract speaker segments** from the transcript (e.g., Speaker 1, Speaker 2, etc.).
-2. **Present short excerpts from each speaker’s segment** to the user for identification:
-    - Excerpt 1: [Insert excerpt from Speaker 1]
-    - Excerpt 2: [Insert excerpt from Speaker 2]
-    - Excerpt 3: [Insert excerpt from Speaker 3]
-    - Continue as necessary for all speakers.
-3. **Request the user to provide names or labels** for each speaker:
-    - Speaker for Excerpt 1: [User input]
-    - Speaker for Excerpt 2: [User input]
-    - Speaker for Excerpt 3: [User input]
-    - Continue as needed.
-### Enhanced Output Generation
-Once speaker names are provided, generate an enhanced output in markdown format:
-- **Summary of Call:**
-    - **Key Discussion Points:** [Outline main topics discussed]
-    - **Decisions Made:** [List any decisions reached during the call]
-    - **Action Items:** [Mention follow-ups or tasks assigned]
-- **Full Transcript:**
-    - **Speaker {{Name1}}:** [Transcript text for this speaker]
-    - **Speaker {{Name2}}:** [Transcript text for this speaker]
-    - Continue this format for all identified speakers.
----
-**Note:**  
-If no STT transcript is detected, proceed with standard note enhancement using the provided <notes> and <context> tags.
+
+Provide the enhanced notes in markdown format. Use markdown syntax for headings, lists, and emphasis to improve clarity and presentation. Ensure that all integrated content from the context is accurately reflected. Return only the markdown formatted note.
 `;
 
 		const [res, controller] = await chatCompletion(
