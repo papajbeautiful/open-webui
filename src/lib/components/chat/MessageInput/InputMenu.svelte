@@ -438,6 +438,7 @@
 						}}
 					>
 						<ChevronLeft />
+
 						<div class="flex items-center w-full justify-between">
 							<div>
 								{$i18n.t('Knowledge')}
@@ -486,6 +487,6 @@
 					<Chats {onSelect} />
 				</div>
 			{/if}
-		</DropdownMenu.Content>	
+		</DropdownMenu.Content>
 	</div>
 </Dropdown>
